@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mstream-statefullset
+  name: mstream
   labels:
     app: mstream
 spec:
   serviceName: "mstream"
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: mstream
@@ -26,37 +26,30 @@ spec:
         volumeMounts:
           - name: music-storage
             mountPath: /music
-
       containers:
       - name: mstream
         image: linuxserver/mstream:5.12.2
-
         ports:
         - containerPort: 3000
-
         env:
           - name: PUID
             valueFrom:
               configMapKeyRef:
                 name: mstream-config
                 key: PUID
-
           - name: PGID
             valueFrom:
               configMapKeyRef:
                 name: mstream-config
                 key: PGID
-
           - name: TZ
             valueFrom:
               configMapKeyRef:
                 name: mstream-config
                 key: TZ
-
         volumeMounts:
           - name: music-storage
             mountPath: /music
-
   volumeClaimTemplates:
   - metadata:
       name: music-storage
@@ -66,8 +59,7 @@ spec:
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
-          storage: 5Gi
-  
+          storage: 10Gi
   - metadata:
       name: config-storage
       labels:
