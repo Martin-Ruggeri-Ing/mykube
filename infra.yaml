@@ -82,7 +82,7 @@ spec:
 
       containers:
       - name: mstream
-        image: linuxserver/mstream:5.12.2
+        image: linuxserver/mstream
 
         ports:
         - containerPort: 3000
