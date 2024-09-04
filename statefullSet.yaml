@@ -1,60 +1,7 @@
-#Ingress
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: mstream-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.class: nginx
-spec:
-  rules:
-    - host: ruggeriml-mstream.my.kube.um.edu.ar
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: mstream-service
-                port:
-                  number: 80
-
----
-
-#ConfigMap
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mstream-config
-data:
-  PUID: "1000" 
-  PGID: "1000"
-  TZ: "Etc/AR"
-
----
-
-#Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: mstream-service
-  labels:
-    app: mstream
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 80
-      targetPort: 3000
-  selector:
-    app: mstream
-
----
-
-#StatefulSet
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mstream-statefulset
+  name: mstream-statefullset
   labels:
     app: mstream
 spec:
