@@ -6,7 +6,7 @@ metadata:
     app: mstream
 spec:
   serviceName: "mstream"
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: mstream
@@ -59,13 +59,4 @@ spec:
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
-          storage: 10Gi
-  - metadata:
-      name: config-storage
-      labels:
-        app: mstream
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 1Gi
+          storage: 5Gi
