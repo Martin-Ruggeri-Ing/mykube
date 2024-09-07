@@ -1,0 +1,85 @@
+#T* Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: ruggeriml-dev
+  name: web-uptimekuma
+
+spec:
+  rules:
+  - host: ruggeriml-uptimekuma.my.kube
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: uptimekuma-service
+            port: 
+              number: 3001
+
+#.um.edu.ar
+---
+
+#T* Service
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ruggeriml-dev
+  name: uptimekuma-service
+  labels:
+    app: uptimekuma
+
+spec:
+  selector:
+    app: uptimekuma
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 3001
+    targetPort: 3001
+
+---
+
+#T* StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: ruggeriml-dev
+  name: uptimekuma-statefulset
+  labels:
+    app: uptimekuma
+
+spec:
+  serviceName: uptimekuma
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uptimekuma
+
+  template:
+    metadata:
+      generateName: uptimekuma 
+      labels:
+        app: uptimekuma
+
+    spec:
+      containers:
+      - name: uptimekuma 
+        image: louislam/uptime-kuma:1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3001
+        volumeMounts:
+        - name: uptimekuma-storage
+          mountPath: "/app/data"
+
+  volumeClaimTemplates:
+  - metadata:
+      name: uptimekuma-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+
