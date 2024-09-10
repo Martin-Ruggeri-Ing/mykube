@@ -1,17 +1,4 @@
 apiVersion: v1
-data:
-  db-name: ZGF0YXNldF9tb2JpbGl0eQ==   #database_mobility
-  db-pass: cGFzc19tb2JpbGl0eQ==  #pass_mobility
-  db-user: cm9vdA==   #root
-kind: Secret
-metadata:
-  name: db-secret
-  namespace: ruggeriml-dev
-  creationTimestamp: null
-
----
-
-apiVersion: v1
 kind: Service
 metadata:
   name: db-svc
@@ -68,22 +55,26 @@ spec:
         ports:
         - containerPort: 3306
           name: mysql
+
         env:
+
         - name: MYSQL_DATABASE
           valueFrom:
-            secretKeyRef:
-              name: db-secret
+            configMapKeyRef:
+              name: db-configmap
               key: db-name
+        - name: MYSQL_ROOT_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: db-configmap
+              key: db-user
+
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-secret
               key: db-pass
-        - name: MYSQL_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: db-user
+
         volumeMounts:
         - name: mysql-data
           mountPath: /var/lib/mysql
@@ -94,9 +85,6 @@ spec:
       volumes:
       - name: init-sql
         emptyDir: {}
-      - name: db-secret
-        secret:
-          secretName: db-secret
       - name: mysql-data
         persistentVolumeClaim:
           claimName: mysql-data
