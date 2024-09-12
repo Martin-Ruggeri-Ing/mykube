@@ -9,8 +9,8 @@ data:
   db-user: root
   db-name: metabase_mobility
   db-type: mysql
-  db-port: "3306"
-  db-host: mysql
+  db-port: "3306" #puerto de la base de datos
+  db-host: db #nombre del servicio de la base de datos
 
 ---
 #T* Secret

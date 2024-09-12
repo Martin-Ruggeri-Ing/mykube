@@ -78,6 +78,7 @@ spec:
         app: mstream
 
     spec:
+
       initContainers:
       - name: init-music
         image: busybox

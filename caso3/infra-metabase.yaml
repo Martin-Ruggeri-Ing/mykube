@@ -1,3 +1,93 @@
+#T* Deployment Metabase
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ruggeriml-dev
+  name: metabase
+  labels:
+    app: metabase
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metabase
+
+  template:
+    metadata:
+      labels:
+        app: metabase
+
+    spec:
+
+      containers:
+        - name: metabase
+          image: metabase/metabase:v0.48.6
+
+          ports:
+          - containerPort: 3000
+
+          env:
+
+            #! Variables de entorno de ConfigMap
+            - name: MB_DB_DBNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db-name
+
+            - name: MB_DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db-user
+
+            - name: MB_DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db-port
+
+            - name: MB_DB_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db-type
+
+            - name: MB_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db-host
+
+            #! Variables de entorno de Secret
+            - name: MB_DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-pass
+
+---
+#T* Service Metabase
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ruggeriml-dev
+  name: metabase-service
+  labels:
+    app: metabase-service
+
+spec:
+  ports:
+  - port: 3000 
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: metabase
+  type: LoadBalancer
+
+---
+#T* Ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -20,76 +110,3 @@ spec:
         pathType: Prefix
 
 #.um.edu.ar
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: ruggeriml-dev
-  name: metabase-service
-  labels:
-    run: metabase-service
-spec:
-  ports:
-  - port: 3000
-    name: metabase    
-    targetPort: 3000
-  selector:
-    run: metabase
-
-
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: ruggeriml-dev
-  name: metabase
-  labels:
-    run: metabase
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      run: metabase
-  template:
-    metadata:
-      generateName: metabase
-      labels:
-        run: metabase
-    spec:
-      containers:
-        - name: metabase
-          image: metabase/metabase
-          ports:
-            - name: metabase
-              containerPort: 3000
-          env:
-            - name: MB_DB_TYPE
-              valueFrom:
-                configMapKeyRef:
-                  name: db-configmap
-                  key: db-type
-            - name: MB_DB_DBNAME
-              valueFrom:
-                configMapKeyRef:
-                  name: db-configmap
-                  key: db-name
-            - name: MB_DB_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: db-configmap
-                  key: db-user
-            - name: MB_DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: db-configmap
-                  key: db-host
-
-            - name: MB_DB_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: metabase-secret
-                  key: db-pass
----

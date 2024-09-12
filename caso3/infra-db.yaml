@@ -1,74 +1,63 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: db-svc
-  namespace: ruggeriml-dev
-  labels:
-    run: db-sts
-spec:
-  ports:
-    - port: 3306
-      targetPort: 3306
-      name: mysql
-  selector:
-    run: db-sts
-
----
-
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   namespace: ruggeriml-dev
-  name: db-sts
+  name: db
   labels:
-    run: db-sts
+    run: db
+
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: db-sts
-  serviceName: "db-sts"
+      run: db
+  serviceName: "db"
 
   template:
     metadata:
+      generateName: db
       labels:
-        run: db-sts
+        run: db
+
     spec:
+
       initContainers:
-      - name: "remove-lost-found"
-        image: "busybox:1.25.0"
+      - name: remove-lost-found
+        image: busybox:1.25.0
         command: ["rm", "-fr", "/var/lib/mysql/lost+found"]
         volumeMounts:
         - name: mysql-data
           mountPath: /var/lib/mysql
       
-      - name: "download-data"
-        image: "curlimages/curl:latest"
+      - name: download-data
+        image: curlimages/curl:7.74.0
         command: ["sh", "-c", "curl -L -o /docker-entrypoint-initdb.d/google-mobility.sql https://raw.githubusercontent.com/Martin-Ruggeri-Ing/datakube/main/google-mobility.sql"]
         volumeMounts:
         - name: init-sql
           mountPath: /docker-entrypoint-initdb.d
 
       containers:
-      - name: wp-sitio-db
+      - name: db-mobility
         image: mysql:5.7
         ports:
         - containerPort: 3306
-          name: mysql
-
+          name: db
         env:
 
+        #! Variables de entorno de ConfigMap
         - name: MYSQL_DATABASE
           valueFrom:
             configMapKeyRef:
               name: db-configmap
               key: db-name
+
         - name: MYSQL_ROOT_USERNAME
           valueFrom:
             configMapKeyRef:
               name: db-configmap
               key: db-user
 
+        #! Variables de entorno de Secret
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -96,4 +85,27 @@ spec:
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
-          storage: 1Gi
+          storage: 2Gi
+
+status: 
+  replicas: 1
+
+---
+
+#T* Service postgres
+apiVersion: v1
+kind: Service
+metadata:
+  name: db  #! Nombre.
+  namespace: ruggeriml-dev
+  labels:
+    run: db  #! Etiqueta.
+
+spec:
+  selector: #! Pods a los que el servicio debe dirigir el tráfico.
+    run: db
+  ports:
+    - port: 3306 #! Puerto del servicio.
+      targetPort: 3306 #! Puerto del Pod.
+      protocol: TCP
+
