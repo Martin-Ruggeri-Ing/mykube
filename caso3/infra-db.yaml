@@ -38,7 +38,7 @@ spec:
 
       containers:
       - name: db-mobility
-        image: mysql:5.7
+        image: mysql:8.0
         ports:
         - containerPort: 3306
           name: db
