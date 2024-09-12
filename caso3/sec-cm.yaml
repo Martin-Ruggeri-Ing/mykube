@@ -6,10 +6,10 @@ metadata:
   name: db-configmap
 
 data:
-  db-user: root
+  db-user: postgres
   db-name: metabase_mobility
-  db-type: mysql
-  db-port: "3306" #puerto de la base de datos
+  db-type: postgres
+  db-port: "5432" #puerto de la base de datos
   db-host: db #nombre del servicio de la base de datos
 
 ---

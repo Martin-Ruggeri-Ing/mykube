@@ -24,10 +24,11 @@ spec:
       initContainers:
       - name: remove-lost-found
         image: busybox:1.25.0
-        command: ["rm", "-fr", "/var/lib/mysql/lost+found"]
+        imagePullPolicy: "IfNotPresent"
+        command: ["rm", "-fr", "/var/lib/postgresql/data/lost+found"]
         volumeMounts:
-        - name: mysql-data
-          mountPath: /var/lib/mysql
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
       
       - name: download-data
         image: curlimages/curl:7.74.0
@@ -38,35 +39,36 @@ spec:
 
       containers:
       - name: db-mobility
-        image: mysql:8.0
+        image: postgres:latest
+        imagePullPolicy: Always
         ports:
-        - containerPort: 3306
+        - containerPort: 5432
           name: db
         env:
 
         #! Variables de entorno de ConfigMap
-        - name: MYSQL_DATABASE
+        - name: POSTGRES_DB
           valueFrom:
             configMapKeyRef:
               name: db-configmap
               key: db-name
 
-        - name: MYSQL_ROOT_USERNAME
+        - name: POSTGRES_USER
           valueFrom:
             configMapKeyRef:
               name: db-configmap
               key: db-user
 
         #! Variables de entorno de Secret
-        - name: MYSQL_ROOT_PASSWORD
+        - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-secret
               key: db-pass
 
         volumeMounts:
-        - name: mysql-data
-          mountPath: /var/lib/mysql
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
         - name: init-sql
           mountPath: /docker-entrypoint-initdb.d
           readOnly: true
@@ -74,21 +76,19 @@ spec:
       volumes:
       - name: init-sql
         emptyDir: {}
-      - name: mysql-data
+      - name: postgres-data
         persistentVolumeClaim:
-          claimName: mysql-data
+          claimName: postgres-data
 
   volumeClaimTemplates:
   - metadata:
-      name: mysql-data
+      name: postgres-data
     spec:
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
-          storage: 2Gi
+          storage: 3Gi
 
-status: 
-  replicas: 1
 
 ---
 
@@ -105,7 +105,7 @@ spec:
   selector: #! Pods a los que el servicio debe dirigir el tráfico.
     run: db
   ports:
-    - port: 3306 #! Puerto del servicio.
-      targetPort: 3306 #! Puerto del Pod.
+    - port: 5432 #! Puerto del servicio.
+      targetPort: 5432 #! Puerto del Pod.
       protocol: TCP
 
