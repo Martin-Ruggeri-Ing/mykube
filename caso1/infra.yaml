@@ -9,7 +9,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: ruggeriml-mstream.my.kube
+  - host: ruggeriml-mstream.my.kube.um.edu.ar
     http:
       paths:
       - path: /

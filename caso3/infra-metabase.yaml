@@ -98,7 +98,7 @@ metadata:
   namespace: ruggeriml-dev
 spec:
   rules:
-  - host: ruggeriml-metabase.my.kube
+  - host: ruggeriml-metabase.my.kube.um.edu.ar
     http:
       paths:
       - backend:
